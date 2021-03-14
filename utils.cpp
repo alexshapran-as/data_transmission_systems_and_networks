@@ -4,13 +4,17 @@
 
 #include "utils.h"
 
-void dispatcher(int mode, int number_of_init_blocks, int number_of_write_blocks, int z1, int z2, int m) {
-    static Queue *queue = nullptr;
-    static Queue *queue_32 = nullptr;
-    static Queue *queue_free = nullptr;
-    static Queue *queue_repeat = new Queue();
-    static int register_out_size = address_size * 3 + package_header_size + 1 + package_info_size + kpk_size;
-    std::bitset<bits_size> *register_out = new std::bitset<bits_size>[register_out_size]{0};
+std::bitset<3> ns(0);
+std::bitset<3> nr(0);
+
+static Queue *queue = nullptr;
+static Queue *queue_32 = nullptr;
+static Queue *queue_free = nullptr;
+static Queue *queue_repeat = new Queue();
+static int register_out_size = address_size * 3 + package_header_size + 1 + package_info_size + kpk_size;
+std::bitset<bits_size> *register_out = new std::bitset<bits_size>[register_out_size]{0};
+
+void dispatcher1(int mode, int number_of_init_blocks, int number_of_write_blocks, int z1, int z2, int m) {
     switch (mode) {
         case 1: {
             queue = alg1(number_of_init_blocks);
@@ -42,8 +46,40 @@ void dispatcher(int mode, int number_of_init_blocks, int number_of_write_blocks,
         }
     }
     mode += 1;
-    dispatcher(mode, number_of_init_blocks, number_of_write_blocks, z1, z2, m);
+    dispatcher1(mode, number_of_init_blocks, number_of_write_blocks, z1, z2, m);
 }
+
+//void dispatcher2(int mode, int number_of_init_blocks, int number_of_write_blocks) {
+//    switch (mode) {
+//        case 1: {
+//            alg6();
+//            break;
+//        }
+//        case 2: {
+//            alg7();
+//            break;
+//        }
+//        case 3: {
+//            alg8();
+//            break;
+//        }
+//        case 4: {
+//            alg9();
+//            break;
+//        }
+//        case 5: {
+//            alg10();
+//            break;
+//        }
+//        case 6: {
+//            alg11();
+//            break;
+//        }
+//        default: {
+//            break;
+//        }
+//    }
+//}
 
 Queue *alg1(int number_of_init_blocks) {
     Queue *queue = new Queue();
@@ -123,6 +159,11 @@ void alg5(Queue *queue_32, Queue *queue_repeat, std::bitset<bits_size> *register
         register_out[address_size * 3 + 1 + package_header_size + package_info_size + i] = queue_32->front->kpk[i];
     }
     move_head(queue_32, queue_repeat);
+}
+
+
+void alg6(Package package_rr) {
+
 }
 
 void move_head(Queue *source_queue, Queue *target_queue) {

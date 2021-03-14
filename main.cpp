@@ -1,5 +1,4 @@
 #include <iostream>
-#include <bitset>
 #include "utils.h"
 
 int main() {
@@ -23,7 +22,7 @@ int main() {
     std::cin >> m;
 
     int mode = 1;
-    dispatcher(mode, number_of_init_blocks, number_of_write_blocks, z1, z2, m);
+    dispatcher1(mode, number_of_init_blocks, number_of_write_blocks, z1, z2, m);
     return 0;
 }
 
