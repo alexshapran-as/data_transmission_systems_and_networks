@@ -16,9 +16,9 @@ std::pair<Queue *, Queue *> alg3(int number_of_init_blocks, int number_of_write_
 void alg4(Package *package, int z1, int z2);
 void alg5(Queue *queue_32, Queue *queue_repeat, std::bitset<bits_size> *register_out);
 void alg6(Package &package_rr);
-void alg7();
-void alg8();
-void alg9();
+void alg7(Package *package_rr_ptr, Queue *queue_free);
+void alg8(Queue *queue_free, Queue *queue_kpm);
+bool alg9(Package *package_rr_ptr);
 void alg10();
 void alg11();
 void move_head(Queue *source_queue, Queue *target_queue);

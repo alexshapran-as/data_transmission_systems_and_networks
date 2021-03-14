@@ -11,6 +11,7 @@ static Queue *queue = nullptr;
 static Queue *queue_32 = nullptr;
 static Queue *queue_free = nullptr;
 static Queue *queue_repeat = new Queue();
+static Queue *queue_kpm = new Queue();
 static int register_out_size = address_size * 3 + package_header_size + 1 + package_info_size + kpk_size;
 std::bitset<bits_size> *register_out = new std::bitset<bits_size>[register_out_size]{0};
 
@@ -36,9 +37,9 @@ void dispatcher1(int mode, int number_of_init_blocks, int number_of_write_blocks
         }
         case 5: {
             alg5(queue_32, queue_repeat, register_out);
-            for (unsigned int i = 0; i < register_out_size; ++i) {
-                std::cout << register_out[i] << std::endl;
-            }
+//            for (unsigned int i = 0; i < register_out_size; ++i) {
+//                std::cout << register_out[i] << std::endl;
+//            }
             break;
         }
         default: {
@@ -50,27 +51,30 @@ void dispatcher1(int mode, int number_of_init_blocks, int number_of_write_blocks
 }
 
 void dispatcher2(int mode, int number_of_init_blocks, int number_of_write_blocks) {
+    static Package *package_rr_ptr = new Package();
     switch (mode) {
         case 1: {
-            Package *package = new Package();
-            package->package_header = queue_repeat->back->package_header;
-            package->frame_header = queue_repeat->back->frame_header;
-            package->package_info = queue_repeat->back->package_info;
-            package->kpk = queue_repeat->back->kpk;
-            Package package_rr = *package;
+            package_rr_ptr->package_header = queue_repeat->back->package_header;
+            package_rr_ptr->frame_header = queue_repeat->back->frame_header;
+            package_rr_ptr->package_info = queue_repeat->back->package_info;
+            package_rr_ptr->kpk = queue_repeat->back->kpk;
+            Package package_rr = *package_rr_ptr;
             alg6(package_rr);
             break;
         }
         case 2: {
-            alg7();
+            alg7(package_rr_ptr, queue_free);
             break;
         }
         case 3: {
-            alg8();
+            alg8(queue_free, queue_kpm);
             break;
         }
         case 4: {
-            alg9();
+            if (!alg9(package_rr_ptr)) {
+                std::cerr << "Ошибка: Условие правильности получения пакета не выполнено" << std::endl;
+                return;
+            }
             break;
         }
         case 5: {
@@ -82,9 +86,11 @@ void dispatcher2(int mode, int number_of_init_blocks, int number_of_write_blocks
             break;
         }
         default: {
-            break;
+            return;
         }
     }
+    mode += 1;
+    dispatcher2(mode, number_of_init_blocks, number_of_write_blocks);
 }
 
 Queue *alg1(int number_of_init_blocks) {
@@ -172,21 +178,31 @@ void alg6(Package &package_rr) {
     std::bitset<bits_size> rr(1);
     std::bitset<3> new_nr(ns.to_ulong() + 1);
     for (unsigned int i = 0; i < 3; ++i) {
-        rr[rr.size() + i - 3] = new_nr[i];
+        rr[bits_size + i - 3] = new_nr[i];
     }
     package_rr.kpk[1] = rr;
 }
 
-void alg7() {
-
+void alg7(Package *package_rr_ptr, Queue *queue_free) {
+    queue_free->front->package_header = package_rr_ptr->package_header;
+    queue_free->front->frame_header = package_rr_ptr->frame_header;
+    queue_free->front->package_info = package_rr_ptr->package_info;
+    queue_free->front->kpk = package_rr_ptr->kpk;
 }
 
-void alg8() {
-
+void alg8(Queue *queue_free, Queue *queue_kpm) {
+    move_head(queue_free, queue_kpm);
 }
 
-void alg9() {
-
+bool alg9(Package *package_rr_ptr) {
+    std::bitset<3> rr(0);
+    for (unsigned int i = 0; i < 3; ++i) {
+        std::bitset<bits_size> kpk_rr = package_rr_ptr->kpk[1];
+        rr[i] = kpk_rr[bits_size + i - 3];
+    }
+    long k = rr.to_ulong();
+    std::bitset<3> kk(rr.to_ulong() - 1);
+    return std::bitset<3>(rr.to_ulong() - 1) == ns;
 }
 
 void alg10() {
