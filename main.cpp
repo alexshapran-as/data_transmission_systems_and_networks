@@ -23,7 +23,9 @@ int main() {
 
     int mode = 1;
     dispatcher1(mode, number_of_init_blocks, number_of_write_blocks, z1, z2, m);
-    return 0;
+    mode = 1;
+    dispatcher2(mode, number_of_init_blocks, number_of_write_blocks);
+ return 0;
 }
 
 

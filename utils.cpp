@@ -49,37 +49,43 @@ void dispatcher1(int mode, int number_of_init_blocks, int number_of_write_blocks
     dispatcher1(mode, number_of_init_blocks, number_of_write_blocks, z1, z2, m);
 }
 
-//void dispatcher2(int mode, int number_of_init_blocks, int number_of_write_blocks) {
-//    switch (mode) {
-//        case 1: {
-//            alg6();
-//            break;
-//        }
-//        case 2: {
-//            alg7();
-//            break;
-//        }
-//        case 3: {
-//            alg8();
-//            break;
-//        }
-//        case 4: {
-//            alg9();
-//            break;
-//        }
-//        case 5: {
-//            alg10();
-//            break;
-//        }
-//        case 6: {
-//            alg11();
-//            break;
-//        }
-//        default: {
-//            break;
-//        }
-//    }
-//}
+void dispatcher2(int mode, int number_of_init_blocks, int number_of_write_blocks) {
+    switch (mode) {
+        case 1: {
+            Package *package = new Package();
+            package->package_header = queue_repeat->back->package_header;
+            package->frame_header = queue_repeat->back->frame_header;
+            package->package_info = queue_repeat->back->package_info;
+            package->kpk = queue_repeat->back->kpk;
+            Package package_rr = *package;
+            alg6(package_rr);
+            break;
+        }
+        case 2: {
+            alg7();
+            break;
+        }
+        case 3: {
+            alg8();
+            break;
+        }
+        case 4: {
+            alg9();
+            break;
+        }
+        case 5: {
+            alg10();
+            break;
+        }
+        case 6: {
+            alg11();
+            break;
+        }
+        default: {
+            break;
+        }
+    }
+}
 
 Queue *alg1(int number_of_init_blocks) {
     Queue *queue = new Queue();
@@ -162,7 +168,32 @@ void alg5(Queue *queue_32, Queue *queue_repeat, std::bitset<bits_size> *register
 }
 
 
-void alg6(Package package_rr) {
+void alg6(Package &package_rr) {
+    std::bitset<bits_size> rr(1);
+    std::bitset<3> new_nr(ns.to_ulong() + 1);
+    for (unsigned int i = 0; i < 3; ++i) {
+        rr[rr.size() + i - 3] = new_nr[i];
+    }
+    package_rr.kpk[1] = rr;
+}
+
+void alg7() {
+
+}
+
+void alg8() {
+
+}
+
+void alg9() {
+
+}
+
+void alg10() {
+
+}
+
+void alg11() {
 
 }
 
