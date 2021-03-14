@@ -48,21 +48,36 @@ bool Queue::empty() {
 void Queue::print() {
     Package *p = this->front;
     for (unsigned int i = 0; i < this->count; ++i) {
-        std::cout << "address: ";
+        std::cout << "Начальный адрес массива: ";
         for (unsigned int i = 0; i < address_size; ++i) {
            std::cout << p->address[i];
         }
         std::cout << std::endl;
-        std::cout << "package_address: " << p << std::endl;
-        std::cout << "package_next_address: " << p->next_package << std::endl;
-        std::cout << "package_prev_address: " << p->prev_package << std::endl;
-        std::cout << "package_info: ";
+        std::cout << "Первое адресное поле : ";
+        for (unsigned int i = 0; i < address_size; ++i) {
+           std::cout << p->prev_address[i];
+        }
+        std::cout << std::endl;
+        std::cout << "Второе адресное поле : ";
+        for (unsigned int i = 0; i < address_size; ++i) {
+           std::cout << p->next_address[i];
+        }
+        std::cout << std::endl;
+//        std::cout << "package_address: " << p << std::endl;
+//        std::cout << "package_next_address: " << p->next_package << std::endl;
+//        std::cout << "package_prev_address: " << p->prev_package << std::endl;
+        std::cout << "Заголовок кадра : " << p->frame_header << std::endl;
+        std::cout << "Заголовок пакета : ";
+        for (unsigned int i = 0; i < package_header_size; ++i) {
+            std::cout << p->package_header[i];
+        }
+        std::cout << std::endl;
+        std::cout << "Информационная часть пакета : ";
         for (unsigned int i = 0; i < package_info_size; ++i) {
             std::cout << p->package_info[i];
         }
         std::cout << std::endl;
-        std::cout << "frame_header: " << p->frame_header << std::endl;
-        std::cout << "kpk: ";
+        std::cout << "КПК: ";
         for (unsigned int i = 0; i < kpk_size; ++i) {
             std::cout << p->kpk[i];
         }

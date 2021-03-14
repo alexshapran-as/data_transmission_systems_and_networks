@@ -37,9 +37,12 @@ void dispatcher1(int mode, int number_of_init_blocks, int number_of_write_blocks
         }
         case 5: {
             alg5(queue_32, queue_repeat, register_out);
-//            for (unsigned int i = 0; i < register_out_size; ++i) {
-//                std::cout << register_out[i] << std::endl;
-//            }
+            std::cout << "Регистр выхода : " << std::endl;
+            for (unsigned int i = 0; i < register_out_size; ++i) {
+                std::cout << register_out[i];
+            }
+            std::cout << std::endl << "Содержание кадра в Оповт : " << std::endl;
+            queue_repeat->print();
             break;
         }
         default: {
@@ -141,9 +144,9 @@ void alg4(Package *package, int z1, int z2) {
     std::bitset<bits_size> z1_bits(z1);
     std::bitset<bits_size> z2_bits(z2);
     for (unsigned int i = 0; i < 3; ++i) {
-        package->frame_header[package->frame_header.size() - i - 2] = z1_bits[i];
+        package->frame_header[bits_size + i - 7] = z1_bits[i];
         ns[i] = z1_bits[i];
-        package->frame_header[package->frame_header.size() - i - 6] = z2_bits[i];
+        package->frame_header[bits_size + i - 3] = z2_bits[i];
         nr[i] = z2_bits[i];
     }
     package->kpk[kpk_size - 1] = package->frame_header ^ package->package_info[0];
@@ -184,6 +187,9 @@ void alg6(Package &package_rr) {
 }
 
 void alg7(Package *package_rr_ptr, Queue *queue_free) {
+    std::bitset<bits_size> *package_header_copy;
+    std::bitset<bits_size> *package_info_copy;
+    std::bitset<bits_size> *kpk_copy;
     queue_free->front->package_header = package_rr_ptr->package_header;
     queue_free->front->frame_header = package_rr_ptr->frame_header;
     queue_free->front->package_info = package_rr_ptr->package_info;
@@ -200,8 +206,6 @@ bool alg9(Package *package_rr_ptr) {
         std::bitset<bits_size> kpk_rr = package_rr_ptr->kpk[1];
         rr[i] = kpk_rr[bits_size + i - 3];
     }
-    long k = rr.to_ulong();
-    std::bitset<3> kk(rr.to_ulong() - 1);
     return std::bitset<3>(rr.to_ulong() - 1) == ns;
 }
 
@@ -219,6 +223,11 @@ void move_head(Queue *source_queue, Queue *target_queue) {
     front_elem->next_address = new std::bitset<bits_size>[address_size]{0};
     front_elem->next_package = nullptr;
     target_queue->push(front_elem);
+}
+
+template<class T>
+T *copy_array(T *source_array) {
+
 }
 
 void save_to_file(std::bitset<bits_size> header) {
