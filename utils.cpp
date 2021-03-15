@@ -2,6 +2,7 @@
 // Created by Алексей Шапран on 13.03.2021.
 //
 
+#include <vector>
 #include "utils.h"
 
 std::bitset<3> ns(0);
@@ -14,6 +15,7 @@ static Queue *queue_repeat = new Queue();
 static Queue *queue_kpm = new Queue();
 static int register_out_size = address_size * 3 + package_header_size + 1 + package_info_size + kpk_size;
 std::bitset<bits_size> *register_out = new std::bitset<bits_size>[register_out_size]{0};
+std::vector<std::bitset<bits_size> *> registers_out;
 
 void dispatcher1(int mode, int number_of_init_blocks, int number_of_write_blocks, int z1, int z2, int m) {
     switch (mode) {
@@ -89,11 +91,52 @@ void dispatcher2(int mode, int number_of_init_blocks, int number_of_write_blocks
             break;
         }
         default: {
+            clean_up();
             return;
         }
     }
     mode += 1;
     dispatcher2(mode, number_of_init_blocks, number_of_write_blocks);
+}
+
+void dispatcher3(int mode, int number_of_init_blocks, int number_of_write_blocks, int z1, int z2, int m, int mcicl) {
+    switch (mode) {
+        case 1: {
+            queue = alg12(number_of_init_blocks);
+            break;
+        }
+        case 2: {
+            alg13(number_of_write_blocks, m, queue);
+            break;
+        }
+        case 3: {
+            std::pair<Queue *, Queue *> queue_pair = alg14(number_of_init_blocks, number_of_write_blocks, queue);
+            queue_32 = queue_pair.first;
+            queue_free = queue_pair.second;
+            break;
+        }
+        case 4: {
+            alg15(queue_32, z1, z2, mcicl);
+            break;
+        }
+        case 5: {
+            alg16(queue_32, queue_repeat, mcicl, register_out, registers_out);
+            std::cout << "Регистр выхода : " << std::endl;
+            for (unsigned int i = 0; i < registers_out.size(); ++i) {
+                for (unsigned int j = 0; j < register_out_size; ++j) {
+                    std::cout << registers_out[i][j];
+                }
+                std::cout << std::endl;
+            }
+            queue_repeat->print();
+            break;
+        }
+        default: {
+            return;
+        }
+    }
+    mode += 1;
+    dispatcher3(mode, number_of_init_blocks, number_of_write_blocks, z1, z2, m, mcicl);
 }
 
 Queue *alg1(int number_of_init_blocks) {
@@ -111,9 +154,9 @@ void alg2(int number_of_write_blocks, int m, Queue *queue) {
         return;
     }
     for (unsigned int i = 0; i < number_of_write_blocks; ++i) {
-        unsigned char msg = m + 1;
+        m += 1;
         for (unsigned int j = 0; j < package_info_size; ++j) {
-            package_iter->package_info[j] = std::bitset<bits_size>(msg);
+            package_iter->package_info[j] = std::bitset<bits_size>(m);
         }
         package_iter = package_iter->next_package;
     }
@@ -215,6 +258,41 @@ void alg11() {
 
 }
 
+Queue *alg12(int number_of_init_blocks) {
+    return alg1(number_of_init_blocks);
+}
+
+void alg13(int number_of_write_blocks, int m, Queue *queue) {
+    alg2(number_of_write_blocks, m, queue);
+}
+
+std::pair<Queue *, Queue *> alg14(int number_of_init_blocks, int number_of_write_blocks, Queue *queue) {
+    return alg3(number_of_init_blocks, number_of_write_blocks, queue);
+}
+
+void alg15(Queue *queue_32, int z1, int z2, int mcicl) {
+    if (mcicl > queue_32->count) {
+        std::cerr << "Ошибка: MCICL больше числа кадров в очереди" << std::endl;
+    }
+    Package *p = queue_32->front;
+    for (unsigned int i = 0; i < mcicl; ++i) {
+        alg4(p, z1, z2);
+        z1 += 1;
+        p = p->next_package;
+    }
+}
+
+void alg16(Queue *queue_32, Queue *queue_repeat, int mcicl, std::bitset<bits_size> *register_out, std::vector<std::bitset<bits_size> *> &registers_out) {
+    if (mcicl > queue_32->count) {
+        std::cerr << "Ошибка: MCICL больше числа кадров в очереди" << std::endl;
+    }
+    for (unsigned int i = 0; i < mcicl; ++i) {
+        alg5(queue_32, queue_repeat, register_out);
+        registers_out.push_back(register_out);
+        register_out = new std::bitset<bits_size>[register_out_size]{0};
+    }
+}
+
 void move_head(Queue *source_queue, Queue *target_queue) {
     Package *front_elem = source_queue->front;
     source_queue->pop();
@@ -222,6 +300,15 @@ void move_head(Queue *source_queue, Queue *target_queue) {
     front_elem->next_address = new std::bitset<bits_size>[address_size]{0};
     front_elem->next_package = nullptr;
     target_queue->push(front_elem);
+}
+
+void clean_up() {
+    queue = nullptr;
+    queue_32 = nullptr;
+    queue_free = nullptr;
+    queue_repeat = nullptr;
+    queue_kpm = nullptr;
+    delete [] register_out;
 }
 
 void save_to_file(std::bitset<bits_size> header) {
