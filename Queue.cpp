@@ -16,9 +16,9 @@ Queue::~Queue() {
 void Queue::push(Package *package_address) {
     if (!this->empty()) {
         this->back->next_package = package_address;
-        this->back->next_address = package_address->address;
+        std::copy(package_address->address, package_address->address + address_size, this->back->next_address);
         package_address->prev_package = this->back;
-        package_address->prev_address = this->back->address;
+        std::copy(this->back->address, this->back->address + address_size, package_address->prev_address);
         this->back = package_address;
     } else {
         this->front = package_address;
@@ -29,10 +29,16 @@ void Queue::push(Package *package_address) {
 
 void Queue::pop() {
     if (!this->empty()) {
-        Package *front_package = this->front;
-        front_package->next_package->prev_address = new std::bitset<bits_size>[address_size]{0};
-        front_package->next_package->prev_package = nullptr;
-        this->front = front_package->next_package;
+        if (this->count == 1) {
+            this->front = nullptr;
+            this->back = nullptr;
+        } else {
+            Package *front_package = this->front;
+            delete [] front_package->next_package->prev_address;
+            front_package->next_package->prev_address = new std::bitset<bits_size>[address_size]{0};
+            front_package->next_package->prev_package = nullptr;
+            this->front = front_package->next_package;
+        }
         this->count -= 1;
     }
 }

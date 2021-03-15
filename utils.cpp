@@ -37,12 +37,12 @@ void dispatcher1(int mode, int number_of_init_blocks, int number_of_write_blocks
         }
         case 5: {
             alg5(queue_32, queue_repeat, register_out);
-            std::cout << "Регистр выхода : " << std::endl;
-            for (unsigned int i = 0; i < register_out_size; ++i) {
-                std::cout << register_out[i];
-            }
-            std::cout << std::endl << "Содержание кадра в Оповт : " << std::endl;
-            queue_repeat->print();
+//            std::cout << "Регистр выхода : " << std::endl;
+//            for (unsigned int i = 0; i < register_out_size; ++i) {
+//                std::cout << register_out[i];
+//            }
+//            std::cout << std::endl << "Содержание кадра в Оповт : " << std::endl;
+//            queue_repeat->print();
             break;
         }
         default: {
@@ -57,12 +57,11 @@ void dispatcher2(int mode, int number_of_init_blocks, int number_of_write_blocks
     static Package *package_rr_ptr = new Package();
     switch (mode) {
         case 1: {
-            package_rr_ptr->package_header = queue_repeat->back->package_header;
+            std::copy(queue_repeat->back->package_header, queue_repeat->back->package_header + package_header_size, package_rr_ptr->package_header);
+            std::copy(queue_repeat->back->package_info, queue_repeat->back->package_info + package_info_size, package_rr_ptr->package_info);
+            std::copy(queue_repeat->back->kpk, queue_repeat->back->kpk + kpk_size, package_rr_ptr->kpk);
             package_rr_ptr->frame_header = queue_repeat->back->frame_header;
-            package_rr_ptr->package_info = queue_repeat->back->package_info;
-            package_rr_ptr->kpk = queue_repeat->back->kpk;
-            Package package_rr = *package_rr_ptr;
-            alg6(package_rr);
+            alg6(package_rr_ptr);
             break;
         }
         case 2: {
@@ -81,7 +80,8 @@ void dispatcher2(int mode, int number_of_init_blocks, int number_of_write_blocks
             break;
         }
         case 5: {
-            alg10();
+            alg10(queue_kpm, queue_repeat, queue_free);
+            queue_free->print();
             break;
         }
         case 6: {
@@ -177,23 +177,20 @@ void alg5(Queue *queue_32, Queue *queue_repeat, std::bitset<bits_size> *register
 }
 
 
-void alg6(Package &package_rr) {
+void alg6(Package *package_rr_ptr) {
     std::bitset<bits_size> rr(1);
     std::bitset<3> new_nr(ns.to_ulong() + 1);
     for (unsigned int i = 0; i < 3; ++i) {
         rr[bits_size + i - 3] = new_nr[i];
     }
-    package_rr.kpk[1] = rr;
+    package_rr_ptr->kpk[1] = rr;
 }
 
 void alg7(Package *package_rr_ptr, Queue *queue_free) {
-    std::bitset<bits_size> *package_header_copy;
-    std::bitset<bits_size> *package_info_copy;
-    std::bitset<bits_size> *kpk_copy;
-    queue_free->front->package_header = package_rr_ptr->package_header;
+    std::copy(package_rr_ptr->package_header, package_rr_ptr->package_header + package_header_size, queue_free->front->package_header);
+    std::copy(package_rr_ptr->package_info, package_rr_ptr->package_info + package_info_size, queue_free->front->package_info);
+    std::copy(package_rr_ptr->kpk, package_rr_ptr->kpk + kpk_size, queue_free->front->kpk);
     queue_free->front->frame_header = package_rr_ptr->frame_header;
-    queue_free->front->package_info = package_rr_ptr->package_info;
-    queue_free->front->kpk = package_rr_ptr->kpk;
 }
 
 void alg8(Queue *queue_free, Queue *queue_kpm) {
@@ -209,8 +206,9 @@ bool alg9(Package *package_rr_ptr) {
     return std::bitset<3>(rr.to_ulong() - 1) == ns;
 }
 
-void alg10() {
-
+void alg10(Queue *queue_kpm, Queue *queue_repeat, Queue *queue_free) {
+    move_head(queue_kpm, queue_free);
+    move_head(queue_repeat, queue_free);
 }
 
 void alg11() {
@@ -220,14 +218,10 @@ void alg11() {
 void move_head(Queue *source_queue, Queue *target_queue) {
     Package *front_elem = source_queue->front;
     source_queue->pop();
+    delete [] front_elem->next_address;
     front_elem->next_address = new std::bitset<bits_size>[address_size]{0};
     front_elem->next_package = nullptr;
     target_queue->push(front_elem);
-}
-
-template<class T>
-T *copy_array(T *source_array) {
-
 }
 
 void save_to_file(std::bitset<bits_size> header) {
